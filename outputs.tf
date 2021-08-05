@@ -23,11 +23,11 @@ output "internet_gateway_id" {
 }
 
 output "dns_zone_id" {
-    value = oci_dns_zone.dns_zone.id
+    value = var.create_dns_zone ? oci_dns_zone.dns_zone[0].id : ""
 }
 
 output "dns_rrset_id" {
-    value = oci_dns_rrset.dns-records.id
+    value = var.create_dns_record ? oci_dns_rrset.dns-records[0].id : ""
 }
 
 output "subnet_id" {

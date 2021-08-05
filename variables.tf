@@ -76,3 +76,23 @@ variable "exist_vcn_id" {
 variable "exist_vcn_dhcp_options_id" {
     type = string
 }
+
+variable "create_dns_zone" {
+    type = bool
+}
+
+variable "create_dns_record" {
+    type = bool  
+}
+
+variable "exist_dns_zone_name" {
+    type = string
+}
+
+variable "exist_dns_zone_id" {
+    type = string
+}
+
+variable "domain_record" {
+    type = list(map(string)) 
+}

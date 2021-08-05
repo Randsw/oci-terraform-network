@@ -1,6 +1,8 @@
 locals {
   vcn_id = var.create_vcn ? oci_core_vcn.internal[0].id : var.exist_vcn_id
   dhcp_options_id = var.create_vcn ? oci_core_vcn.internal[0].default_dhcp_options_id : var.exist_vcn_dhcp_options_id
+  dns_zone_name = var.create_dns_zone ? oci_dns_zone.dns_zone[0].name : var.exist_dns_zone_name
+  dns_zone_id = var.create_dns_zone ? oci_dns_zone.dns_zone[0].id : var.exist_dns_zone_id
 }
 
 resource "oci_core_vcn" "internal" {
@@ -48,6 +50,7 @@ resource "oci_core_internet_gateway" "rand_internet_gateway" {
 }
 
 resource "oci_dns_zone" "dns_zone" {
+    count = var.create_dns_zone ? 1 : 0
     compartment_id = var.compartment_id
     name = var.dns_zone_name
     zone_type = var.dns_zone_type
@@ -55,14 +58,19 @@ resource "oci_dns_zone" "dns_zone" {
 }
 
 resource "oci_dns_rrset" "dns-records" {
-    domain = oci_dns_zone.dns_zone.name
+    count = var.create_dns_record ? 1 : 0
+    domain = local.dns_zone_name 
     rtype = "A"
-    zone_name_or_id = oci_dns_zone.dns_zone.id
+    zone_name_or_id = local.dns_zone_id
     compartment_id = var.compartment_id
-    items {
-        domain = oci_dns_zone.dns_zone.name
-        rdata = var.instance_public_ip
-        rtype = "A"
-        ttl = 3600
+    
+    dynamic "items" {
+        for_each = var.domain_record
+        content {
+            domain = items.value["domain_name"]
+            rdata = items.value["ip_address"]
+            rtype = items.value["dns_record_type"]
+            ttl = items.value["ttl"]
+        }
     }
 }
